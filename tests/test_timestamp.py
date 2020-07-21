@@ -1,9 +1,9 @@
 import json
 from datetime import datetime
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
-from timestamp.timestamp import generate_response
+from fcc_timestamp import generate_response_from_date_string
 
 
 @pytest.mark.parametrize(
@@ -18,7 +18,7 @@ from timestamp.timestamp import generate_response
     ],
 )
 def test_generates_correct_response_from_datestring(datestring, expected):
-    actual = generate_response(datestring)
+    actual = generate_response_from_date_string(datestring)
     assert actual == json.dumps(expected)
 
 
@@ -26,7 +26,7 @@ def test_generates_correct_response_without_input():
     expected = json.dumps(
         {"unix": 947073890000, "utc": "Wed, 05 Jan 2000 12:04:50 GMT"}
     )
-    with patch("timestamp.timestamp.datetime") as mock_datetime:
+    with patch("fcc_timestamp.timestamp.datetime") as mock_datetime:
         mock_datetime.utcnow.return_value = datetime(2000, 1, 5, 12, 4, 50)
-        actual = generate_response("")
+        actual = generate_response_from_date_string("")
     assert actual == expected
