@@ -31,7 +31,7 @@ def _parse_datetime(dtstr: str):
 def _response_from_datetime(dt):
     return json.dumps(
         {
-            "unix": int(dt.timestamp()) * 1000,
+            "unix": int(dt.timestamp() * 1000),
             "utc": dt.strftime("%a, %d %b %Y %H:%M:%S %Z"),
         }
     )

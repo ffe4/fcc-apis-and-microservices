@@ -30,3 +30,12 @@ def test_generates_correct_response_without_input():
         mock_datetime.utcnow.return_value = datetime(2000, 1, 5, 12, 4, 50)
         actual = generate_response_from_date_string("")
     assert actual == expected
+
+
+def test_returns_identical_timestamp():
+    timestamp = 947073890012
+    expected = json.dumps(
+        {"unix": timestamp, "utc": "Wed, 05 Jan 2000 12:04:50 GMT"}
+    )
+    actual = generate_response_from_date_string(str(timestamp))
+    assert actual == expected
