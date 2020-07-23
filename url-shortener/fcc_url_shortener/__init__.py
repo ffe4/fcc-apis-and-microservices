@@ -1,1 +1,2 @@
 from fcc_url_shortener.redis_shortened_storage import RedisShortenedStorage
+from fcc_url_shortener.url_shortener_flask import app
