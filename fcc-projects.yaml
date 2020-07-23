@@ -1,0 +1,220 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: timestamp
+  labels:
+    app: timestamp
+spec:
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+  selector:
+    app: timestamp
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: timestamp
+  labels:
+    app: timestamp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: timestamp
+  template:
+    metadata:
+      labels:
+        app: timestamp
+    spec:
+      containers:
+        - image: ffe4/fcc-timestamp
+          name: timestamp-app
+          ports:
+            - containerPort: 5000
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: whoami
+  labels:
+    app: whoami
+spec:
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+  selector:
+    app: whoami
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whoami
+  labels:
+    app: whoami
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: whoami
+  template:
+    metadata:
+      labels:
+        app: whoami
+    spec:
+      containers:
+        - image: ffe4/fcc-request-header-parser
+          name: whoami-app
+          ports:
+            - containerPort: 5000
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shorturl
+  labels:
+    app: shorturl
+spec:
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+  selector:
+    app: shorturl
+    tier: frontend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shorturl-redis
+  labels:
+    app: shorturl
+spec:
+  ports:
+    - port: 6379
+      targetPort: 6379
+  selector:
+    app: shorturl
+    tier: backend
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: shorturl-redis-secret
+  labels:
+    app: shorturl
+type: Opaque
+data:
+  password: cGFzcwo=
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flask-config
+data:
+  redis-connection.cfg: | # TODO
+    REDIS_HOST="shorturl-redis"
+    REDIS_PORT=6379
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shorturl
+  labels:
+    app: shorturl
+    tier: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: shorturl
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: shorturl
+        tier: frontend
+    spec:
+      containers:
+        - image: ffe4/fcc-shorturl
+          name: shorturl-app
+          ports:
+            - containerPort: 5000
+          imagePullPolicy: Always
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: shorturl-redis-secret
+                  key: password
+          volumeMounts:
+          - name: flask-config
+            mountPath: /etc/config
+      volumes:
+      - name: flask-config
+        configMap:
+          name: flask-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shorturl-redis
+  labels:
+    app: shorturl
+    tier: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shorturl
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: shorturl
+        tier: backend
+    spec:
+      containers:
+        - image: redis
+          name: redis
+          imagePullPolicy: Always
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: shorturl-redis-secret
+                  key: password
+          args: ["--requirepass", "$(REDIS_PASSWORD)", "--bind", "0.0.0.0"]
+          ports:
+            - containerPort: 6379
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: fcc-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: /api/timestamp(/|$)(.*)
+            pathType: Prefix
+            backend:
+              serviceName: timestamp
+              servicePort: 80
+          - path: /api/whoami(/|$)
+            pathType: Prefix
+            backend:
+              serviceName: whoami
+              servicePort: 80
+          - path: /api/shorturl/()(.*)
+            pathType: Prefix
+            backend:
+              serviceName: shorturl
+              servicePort: 80
