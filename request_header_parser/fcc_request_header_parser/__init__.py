@@ -1,2 +1,0 @@
-from fcc_request_header_parser.request_header_parser import generate_response
-from fcc_request_header_parser.request_header_parser_service import app
