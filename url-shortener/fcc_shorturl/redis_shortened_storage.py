@@ -3,7 +3,7 @@ from typing import Union
 import redis
 
 
-ID_COUNTER = "short-url-counter"
+ID_COUNTER = "short-counter"
 
 
 def _base34(num: int) -> str:

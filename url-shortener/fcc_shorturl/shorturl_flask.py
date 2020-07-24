@@ -1,18 +1,21 @@
-import json
 import os
 from socket import gethostbyname, gaierror
 from urllib.parse import urlparse, urlunparse
 
-from flask import Flask, request, redirect, abort
-from fcc_url_shortener import RedisShortenedStorage
+from flask import Flask, request, redirect, abort, jsonify
+from fcc_shorturl import RedisShortenedStorage
 
 app = Flask(__name__)
-app.config.from_pyfile("/etc/config/redis-connection.cfg")
+
+try:
+    app.config.from_pyfile("/etc/config/redis-connection.cfg")  # TODO use ENV
+except FileNotFoundError:
+    pass
 
 
 redis = RedisShortenedStorage(
-    app.config.get("REDIS_HOST"),
-    app.config.get("REDIS_PORT"),
+    app.config.get("REDIS_HOST", "localhost"),
+    app.config.get("REDIS_PORT", 6379),
     os.getenv("REDIS_PASSWORD"),  # TODO manage secrect with Vault
 )
 
@@ -41,9 +44,9 @@ def add_url():
     url = request.form.get("url")
     url = parse_user_url(url)
     if not _is_valid_url(url):
-        return json.dumps({"error": "invalid URL"})
+        return jsonify({"error": "invalid URL"})
     short_url = redis.add(url)
-    return json.dumps({"original_url": url, "short_url": short_url})
+    return jsonify({"original_url": url, "short_url": short_url})
 
 
 @app.route("/<short_url>", methods=["GET"])

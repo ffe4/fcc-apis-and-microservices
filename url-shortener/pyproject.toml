@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "fcc-url-shortener"
+name = "fcc-shorturl"
 version = "0.1.0"
-description = "freeCodeCamp url shortener API project"
+description = "freeCodeCamp.com URL Shortener Microservice project"
 authors = ["Daniel Lemm <61800298+ffe4@users.noreply.github.com>"]
 
 [tool.poetry.dependencies]

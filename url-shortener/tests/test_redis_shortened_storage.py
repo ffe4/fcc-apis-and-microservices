@@ -1,10 +1,10 @@
 from unittest.mock import patch
 
 import fakeredis
-from fcc_url_shortener import RedisShortenedStorage
+from fcc_shorturl import RedisShortenedStorage
 
 
-@patch("fcc_url_shortener.redis_shortened_storage.redis.Redis", fakeredis.FakeStrictRedis)
+@patch("fcc_shorturl.redis_shortened_storage.redis.Redis", fakeredis.FakeStrictRedis)
 def test_adds_and_gets_shortened_entries():
     redis_store = RedisShortenedStorage("", "", "", int_to_str_func=str)
     short = redis_store.add("test")
@@ -13,7 +13,7 @@ def test_adds_and_gets_shortened_entries():
     assert short == "1"
 
 
-@patch("fcc_url_shortener.redis_shortened_storage.redis.Redis", fakeredis.FakeStrictRedis)
+@patch("fcc_shorturl.redis_shortened_storage.redis.Redis", fakeredis.FakeStrictRedis)
 def test_add_returns_consecutive_ids():
     redis_store = RedisShortenedStorage("", "", "", int_to_str_func=str)
     for i in range(1, 10):
@@ -22,7 +22,7 @@ def test_add_returns_consecutive_ids():
         assert redis_store.get(str(i)) == str(i)
 
 
-@patch("fcc_url_shortener.redis_shortened_storage.redis.Redis", fakeredis.FakeStrictRedis)
+@patch("fcc_shorturl.redis_shortened_storage.redis.Redis", fakeredis.FakeStrictRedis)
 def test_adding_existent_url_does_not_overwrite_old_uid():
     redis_store = RedisShortenedStorage("", "", "", int_to_str_func=str)
     short1 = redis_store.add("test")
@@ -32,7 +32,7 @@ def test_adding_existent_url_does_not_overwrite_old_uid():
     assert short1 == short2
 
 
-@patch("fcc_url_shortener.redis_shortened_storage.redis.Redis", fakeredis.FakeStrictRedis)
+@patch("fcc_shorturl.redis_shortened_storage.redis.Redis", fakeredis.FakeStrictRedis)
 def test_incomplete_add_gets_fixed_after_new_add():
     prefix_short = "short:"
     prefix_long = "long:"
@@ -46,7 +46,7 @@ def test_incomplete_add_gets_fixed_after_new_add():
     assert redis_store._redis.get(prefix_short + short) == "test"
 
 
-@patch("fcc_url_shortener.redis_shortened_storage.redis.Redis", fakeredis.FakeStrictRedis)
+@patch("fcc_shorturl.redis_shortened_storage.redis.Redis", fakeredis.FakeStrictRedis)
 def test_key_prefix_is_applied_properly():
     prefix_short = "short:"
     prefix_long = "long:"
