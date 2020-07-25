@@ -20,7 +20,7 @@ def _base34(num: int) -> str:
 class RedisShortenedStorage:
     def __init__(
         self,
-        ip,
+        host,
         port,
         password,
         prefix_short="short_url:",
@@ -31,7 +31,7 @@ class RedisShortenedStorage:
         self.prefix_long = prefix_long
         self.prefix_short = prefix_short
         self._redis = redis.Redis(
-            host=ip, port=port, password=password, decode_responses=True
+            host=host, port=port, password=password, decode_responses=True
         )
 
     def _generate_uid(self):
