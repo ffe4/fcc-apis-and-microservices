@@ -14,8 +14,8 @@ except FileNotFoundError:
 
 
 redis = RedisShortenedStorage(
-    app.config.get("REDIS_HOST", "localhost"),
-    app.config.get("REDIS_PORT", 6379),
+    app.config.get("REDIS_HOST") or os.getenv("REDIS_HOST") or "localhost",
+    app.config.get("REDIS_PORT") or os.getenv("REDIS_PORT") or 6379,
     os.getenv("REDIS_PASSWORD"),  # TODO manage secrect with Vault
 )
 
