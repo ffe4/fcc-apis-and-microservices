@@ -1,5 +1,7 @@
 import json
+import string
 from datetime import datetime
+import random
 
 import pytest
 from pytest_bdd import given, when, then, parsers, scenarios
@@ -27,6 +29,15 @@ def client():
 
     exercise_flask.reset_db()
     exercise_flask.init_db()
+
+
+def create_test_user(name=None):
+    if name is None:
+        name = ''.join(random.choices(string.ascii_uppercase, k=10))
+    test_user = exercise_flask.User(username=name)
+    exercise_flask.db.session.add(test_user)
+    exercise_flask.db.session.commit()
+    return test_user
 
 
 @given("the API endpoint /api/exercise")
@@ -71,9 +82,7 @@ def test_users_route_returns_list_of_created_users(client):
 
 
 def test_add_route_creates_exercise_entry(client):
-    test_user = exercise_flask.User(username="Alex")
-    exercise_flask.db.session.add(test_user)
-    exercise_flask.db.session.commit()
+    test_user = create_test_user()
     exercise = {
         "userId": test_user.id,
         "description": "fast typing",
@@ -92,9 +101,7 @@ def test_add_route_creates_exercise_entry(client):
 
 
 def test_add_route_creates_date_if_none_specified(client):
-    test_user = exercise_flask.User(username="Alex")
-    exercise_flask.db.session.add(test_user)
-    exercise_flask.db.session.commit()
+    test_user = create_test_user()
     exercise = {
         "userId": test_user.id,
         "description": "fast typing",
@@ -109,9 +116,7 @@ def test_add_route_creates_date_if_none_specified(client):
 
 
 def test_add_route_returns_user_and_exercise_fields_in_response(client):
-    test_user = exercise_flask.User(username="Alex")
-    exercise_flask.db.session.add(test_user)
-    exercise_flask.db.session.commit()
+    test_user = create_test_user()
     exercise = {
         "userId": test_user.id,
         "description": "fast typing",
