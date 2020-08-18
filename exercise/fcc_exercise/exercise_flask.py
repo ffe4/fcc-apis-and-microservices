@@ -39,9 +39,23 @@ def create_user():
     return jsonify({"_id": user.id, "username": user.name,})
 
 
+@app.route("/users", methods=["GET"])
+def get_users():
+    users = User.query.all()
+    return jsonify([{"_id": user.id, "username": user.name} for user in users])
+
+
 def init_db():
     db.create_all()
 
 
+def reset_db():
+    if not app.config["TESTING"]:
+        raise Exception("This operations is only permitted in a test environment")
+    db.session.remove()
+    db.drop_all()
+
+
 if __name__ == "__main__":
+    init_db()
     app.run()

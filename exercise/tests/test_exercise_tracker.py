@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from pytest_bdd import given, when, then, parsers, scenarios
 
@@ -21,6 +23,9 @@ def client():
         with exercise_flask.app.app_context():
             exercise_flask.init_db()
         yield client
+
+    exercise_flask.reset_db()
+    exercise_flask.init_db()
 
 
 @given("the API endpoint /api/exercise")
@@ -51,3 +56,16 @@ def user_returned(context, username):
     assert actual
     assert actual["username"] == username
     assert isinstance(actual["_id"], int)
+
+
+def test_users_route_returns_list_of_created_users(client):
+    users = {"UserA", "UserB", "@User", "user C", "/.,;'"}
+    for name in users:
+        client.post("/new-user", data=name)
+
+    response = client.get("/users")
+    data = json.loads(response.data)
+
+    assert set([user['username'] for user in data]) == users
+
+
