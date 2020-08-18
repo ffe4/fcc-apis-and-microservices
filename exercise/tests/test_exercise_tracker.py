@@ -40,6 +40,21 @@ def create_test_user(name=None):
     return test_user
 
 
+def create_test_exercise(user_id):
+    description = ''.join(random.choices(string.ascii_uppercase, k=10))
+    duration = random.randint(10, 10000)
+    date = datetime(2020, 1, random.randint(1, 10), random.randint(8, 20))
+    exercise = exercise_flask.Exercise(
+        user_id=user_id,
+        description=description,
+        duration=duration,
+        date=date,
+    )
+    exercise_flask.db.session.add(exercise)
+    exercise_flask.db.session.commit()
+    return exercise
+
+
 @given("the API endpoint /api/exercise")
 def api_endpoint(client):
     return client
@@ -132,3 +147,33 @@ def test_add_route_returns_user_and_exercise_fields_in_response(client):
     assert actual["description"] == exercise["description"]
     assert actual["duration"] == exercise["duration"]
     assert actual["date"] == exercise["date"]
+
+
+def test_log_route_returns_empty_exercise_log_for_new_user(client):
+    test_user = create_test_user()
+
+    response = client.get(f"/log?userId={test_user.id}")
+    actual = json.loads(response.data)
+
+    assert actual["_id"] == test_user.id
+    assert actual["username"] == test_user.name
+    assert actual["count"] == 0
+    assert actual["log"] == []
+
+
+def test_log_route_returns_exercise_log_for_given_user(client):
+    _ = create_test_user()
+    test_user = create_test_user()
+
+    exercises = [create_test_exercise(test_user.id) for _ in range(5)]
+
+    response = client.get(f"/log?userId={test_user.id}")
+    actual = json.loads(response.data)
+
+    assert actual["_id"] == test_user.id
+    assert actual["username"] == test_user.name
+    assert actual["count"] == len(exercises)
+    assert len(actual["log"]) == len(exercises)
+    assert set(ex["description"] for ex in actual["log"]) == set(ex.description for ex in exercises)
+    assert set(ex["duration"] for ex in actual["log"]) == set(ex.duration for ex in exercises)
+    assert set(ex["date"] for ex in actual["log"]) == set(ex.date.strftime('%a, %d %b %Y %H:%M:%S GMT') for ex in exercises)

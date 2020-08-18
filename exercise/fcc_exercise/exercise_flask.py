@@ -76,6 +76,27 @@ def add_exercise():
     })
 
 
+@app.route("/log", methods=["GET"])
+def exercise_log():
+    user_id = request.args.get("userId")
+    if user_id is None:
+        return "missing mandatory userId argument"
+    user = User.query.get(user_id)
+    exercises = db.session.query(Exercise).filter_by(user_id=user.id).all()
+    return jsonify({
+        "_id": user.id,
+        "username": user.name,
+        "count": len(exercises),
+        "log": [
+            {
+                "description": ex.description,
+                "duration": ex.duration,
+                "date": ex.date,
+            } for ex in exercises
+        ]
+    })
+
+
 def init_db():
     db.create_all()
 
