@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 
 import pytest
 from pytest_bdd import given, when, then, parsers, scenarios
@@ -69,3 +70,22 @@ def test_users_route_returns_list_of_created_users(client):
     assert set([user['username'] for user in data]) == users
 
 
+def test_add_route_creates_exercise_entry(client):
+    test_user = exercise_flask.User(username="Alex")
+    exercise_flask.db.session.add(test_user)
+    exercise_flask.db.session.commit()
+    exercise = {
+        "userId": test_user.id,
+        "description": "fast typing",
+        "duration": 10,
+        "date": datetime(2020, 10, 10).isoformat(),
+    }
+
+    client.post("/add", data=exercise)
+
+    actual = exercise_flask.Exercise.query.first()
+    assert actual is not None
+    assert actual.user_id == exercise["userId"]
+    assert actual.description == exercise["description"]
+    assert actual.duration == exercise["duration"]
+    assert actual.date == datetime.fromisoformat(exercise["date"])

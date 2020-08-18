@@ -1,3 +1,4 @@
+from dateutil.parser import parse
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 
@@ -43,6 +44,27 @@ def create_user():
 def get_users():
     users = User.query.all()
     return jsonify([{"_id": user.id, "username": user.name} for user in users])
+
+
+@app.route("/add", methods=["POST"])
+def add_exercise():
+    if not all(key in request.form for key in ("userId", "description", "duration")):
+        return "missing field"
+    data = {
+        "user_id": request.form["userId"],
+        "description": request.form["description"],
+        "duration": request.form["duration"]
+    }
+    if request.form.get("date"):
+        try:
+            dt = parse(request.form["date"])
+        except:
+            return "error while parsing date"
+        data["date"] = dt
+    exercise = Exercise(**data)
+    db.session.add(exercise)
+    db.session.commit()
+    return ""
 
 
 def init_db():
