@@ -51,7 +51,7 @@ def get_users():
 @app.route("/add", methods=["POST"])
 def add_exercise():
     if not all(key in request.form for key in ("userId", "description", "duration")):
-        return "missing field"
+        abort(400, "missing field")
     data = {
         "user_id": request.form["userId"],
         "description": request.form["description"],

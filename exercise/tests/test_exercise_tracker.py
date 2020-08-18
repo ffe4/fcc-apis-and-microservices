@@ -182,3 +182,11 @@ def test_log_route_returns_exercise_log_for_given_user(client):
 def test_missing_userid_field_results_in_code_400(client):
     response = client.get(f"/log")
     assert response.status_code == 400
+
+
+def test_missing_add_route_field_results_in_code_400(client):
+    response = client.post(f"/add", data={
+        "userId": 1,
+        "description": "test",
+    })
+    assert response.status_code == 400
