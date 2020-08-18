@@ -106,3 +106,24 @@ def test_add_route_creates_date_if_none_specified(client):
     actual = exercise_flask.Exercise.query.first()
     assert actual is not None
     assert actual.date is not None
+
+
+def test_add_route_returns_user_and_exercise_fields_in_response(client):
+    test_user = exercise_flask.User(username="Alex")
+    exercise_flask.db.session.add(test_user)
+    exercise_flask.db.session.commit()
+    exercise = {
+        "userId": test_user.id,
+        "description": "fast typing",
+        "duration": 10,
+        "date": datetime(2020, 10, 10).isoformat(),
+    }
+
+    response = client.post("/add", data=exercise)
+    actual = json.loads(response.data)
+
+    assert actual["_id"] == test_user.id
+    assert actual["username"] == test_user.name
+    assert actual["description"] == exercise["description"]
+    assert actual["duration"] == exercise["duration"]
+    assert actual["date"] == exercise["date"]

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from dateutil.parser import parse
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -62,9 +64,16 @@ def add_exercise():
             return "error while parsing date"
         data["date"] = dt
     exercise = Exercise(**data)
+    user = User.query.get(exercise.user_id)
     db.session.add(exercise)
     db.session.commit()
-    return ""
+    return jsonify({
+        "_id": user.id,
+        "username": user.name,
+        "date": datetime.isoformat(exercise.date),
+        "duration": exercise.duration,
+        "description": exercise.description,
+    })
 
 
 def init_db():
