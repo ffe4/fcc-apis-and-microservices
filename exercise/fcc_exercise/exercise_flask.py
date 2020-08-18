@@ -61,7 +61,7 @@ def add_exercise():
         try:
             dt = parse(request.form["date"])
         except:
-            return "error while parsing date"
+            abort(400, "unsupported date format")
         data["date"] = dt
     exercise = Exercise(**data)
     user = User.query.get(exercise.user_id)

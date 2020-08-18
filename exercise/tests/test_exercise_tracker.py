@@ -190,3 +190,13 @@ def test_missing_add_route_field_results_in_code_400(client):
         "description": "test",
     })
     assert response.status_code == 400
+
+
+def test_invalid_date_format_results_in_code_400(client):
+    response = client.post(f"/add", data={
+        "userId": 1,
+        "description": "test",
+        "duration": 100,
+        "date": "test"
+    })
+    assert response.status_code == 400
