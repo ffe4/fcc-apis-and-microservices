@@ -177,3 +177,8 @@ def test_log_route_returns_exercise_log_for_given_user(client):
     assert set(ex["description"] for ex in actual["log"]) == set(ex.description for ex in exercises)
     assert set(ex["duration"] for ex in actual["log"]) == set(ex.duration for ex in exercises)
     assert set(ex["date"] for ex in actual["log"]) == set(ex.date.strftime('%a, %d %b %Y %H:%M:%S GMT') for ex in exercises)
+
+
+def test_missing_userid_field_results_in_code_400(client):
+    response = client.get(f"/log")
+    assert response.status_code == 400

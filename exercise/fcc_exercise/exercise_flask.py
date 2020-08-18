@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from dateutil.parser import parse
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, abort
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -80,7 +80,7 @@ def add_exercise():
 def exercise_log():
     user_id = request.args.get("userId")
     if user_id is None:
-        return "missing mandatory userId argument"
+        abort(400, "missing mandatory userId argument")
     user = User.query.get(user_id)
     exercises = db.session.query(Exercise).filter_by(user_id=user.id).all()
     return jsonify({
