@@ -179,6 +179,20 @@ def test_log_route_returns_exercise_log_for_given_user(client):
     assert set(ex["date"] for ex in actual["log"]) == set(ex.date.strftime('%a, %d %b %Y %H:%M:%S GMT') for ex in exercises)
 
 
+def test_limit_argument_limits_exercise_log_results(client):
+    test_user = create_test_user()
+    for i in range(25):
+        create_test_exercise(test_user.id)
+
+    response = client.get(f"/log?userId={test_user.id}")
+    actual_full = json.loads(response.data)
+    response = client.get(f"/log?userId={test_user.id}&limit=20")
+    actual_limited = json.loads(response.data)
+
+    assert len(actual_full["log"]) == 25
+    assert len(actual_limited["log"]) == 20
+
+
 def test_missing_userid_field_results_in_code_400(client):
     response = client.get(f"/log")
     assert response.status_code == 400

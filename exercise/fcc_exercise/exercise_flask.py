@@ -82,7 +82,10 @@ def exercise_log():
     if user_id is None:
         abort(400, "missing mandatory userId argument")
     user = User.query.get(user_id)
-    exercises = db.session.query(Exercise).filter_by(user_id=user.id).all()
+    query = db.session.query(Exercise).filter_by(user_id=user.id)
+    if request.args.get("limit"):
+        query = query.limit(request.args.get("limit"))
+    exercises = query.all()
     return jsonify({
         "_id": user.id,
         "username": user.name,
