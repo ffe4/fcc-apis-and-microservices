@@ -40,10 +40,10 @@ def create_test_user(name=None):
     return test_user
 
 
-def create_test_exercise(user_id):
-    description = ''.join(random.choices(string.ascii_uppercase, k=10))
-    duration = random.randint(10, 10000)
-    date = datetime(2020, 1, random.randint(1, 10), random.randint(8, 20))
+def create_test_exercise(user_id, description=None, duration=None, date=None):
+    description = description or ''.join(random.choices(string.ascii_uppercase, k=10))
+    duration = duration or random.randint(10, 10000)
+    date = date or datetime(2020, 1, random.randint(1, 10), random.randint(8, 20))
     exercise = exercise_flask.Exercise(
         user_id=user_id,
         description=description,
@@ -191,6 +191,19 @@ def test_limit_argument_limits_exercise_log_results(client):
 
     assert len(actual_full["log"]) == 25
     assert len(actual_limited["log"]) == 20
+
+
+def test_from_to_limiting_of_exercise_log_results(client):
+    test_user = create_test_user()
+    create_test_exercise(test_user.id, date=datetime(2020, 1, 1))
+    create_test_exercise(test_user.id, date=datetime(2020, 1, 2))
+    create_test_exercise(test_user.id, date=datetime(2020, 1, 3))
+    create_test_exercise(test_user.id, date=datetime(2020, 1, 4))
+
+    response = client.get(f"/log?userId={test_user.id}&from=2020-01-02&to=2020-01-03")
+    actual = json.loads(response.data)
+
+    assert len(actual["log"]) == 2
 
 
 def test_missing_userid_field_results_in_code_400(client):

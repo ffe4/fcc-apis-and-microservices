@@ -83,6 +83,15 @@ def exercise_log():
         abort(400, "missing mandatory userId argument")
     user = User.query.get(user_id)
     query = db.session.query(Exercise).filter_by(user_id=user.id)
+    if request.args.get("from") and request.args.get("to"):
+        try:
+            from_date = parse(request.args.get("from"))
+            to_date = parse(request.args.get("to"))
+        except:
+            pass
+        else:
+            query = query.filter(Exercise.date >= from_date)
+            query = query.filter(Exercise.date <= to_date)
     if request.args.get("limit"):
         query = query.limit(request.args.get("limit"))
     exercises = query.all()
