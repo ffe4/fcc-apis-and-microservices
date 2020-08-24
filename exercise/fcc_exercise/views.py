@@ -41,6 +41,8 @@ def add_exercise():
         data["date"] = dt
     exercise = Exercise(**data)
     user = User.query.get(exercise.user_id)
+    if user is None:
+        abort(400, "user not found")
     db.session.add(exercise)
     db.session.commit()
     return jsonify({
@@ -58,6 +60,8 @@ def exercise_log():
     if user_id is None:
         abort(400, "missing mandatory userId argument")
     user = User.query.get(user_id)
+    if user is None:
+        abort(400, "user not found")
     query = db.session.query(Exercise).filter_by(user_id=user.id)
     if request.args.get("from") and request.args.get("to"):
         try:

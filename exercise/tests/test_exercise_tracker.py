@@ -242,3 +242,21 @@ def test_invalid_date_format_results_in_code_400(client):
         "date": "test"
     })
     assert response.status_code == 400
+
+
+def test_invalid_user_on_log_route_results_in_code_400(client):
+    response = client.get(f"/log", data={
+        "userId": 100,
+        "description": "test",
+        "duration": 100,
+    })
+    assert response.status_code == 400
+
+
+def test_invalid_user_on_add_route_results_in_code_400(client):
+    response = client.post(f"/add", data={
+        "userId": 100,
+        "description": "test",
+        "duration": 100,
+    })
+    assert response.status_code == 400
