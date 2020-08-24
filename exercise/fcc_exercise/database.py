@@ -11,7 +11,7 @@ def reset_db():
     db.drop_all()
 
 
-@click.command('init-db')
+@click.command("init-db")
 @with_appcontext
 def init_db_cmd():
     db.create_all()

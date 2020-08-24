@@ -20,11 +20,9 @@ def context():
 
 @pytest.fixture
 def app():
-    app = exercise_flask.create_app({
-        "DATABASE_URI": "sqlite:///:memory:",
-        "TESTING": True,
-        "DEBUT": True,
-    })
+    app = exercise_flask.create_app(
+        {"DATABASE_URI": "sqlite:///:memory:", "TESTING": True, "DEBUT": True}
+    )
     ctx = app.test_request_context()
     ctx.push()
     yield app
@@ -41,7 +39,7 @@ def client(app):
 
 def create_test_user(name=None):
     if name is None:
-        name = ''.join(random.choices(string.ascii_uppercase, k=10))
+        name = "".join(random.choices(string.ascii_uppercase, k=10))
     test_user = User(username=name)
     exercise_flask.db.session.add(test_user)
     exercise_flask.db.session.commit()
@@ -49,14 +47,11 @@ def create_test_user(name=None):
 
 
 def create_test_exercise(user_id, description=None, duration=None, date=None):
-    description = description or ''.join(random.choices(string.ascii_uppercase, k=10))
+    description = description or "".join(random.choices(string.ascii_uppercase, k=10))
     duration = duration or random.randint(10, 10000)
     date = date or datetime(2020, 1, random.randint(1, 10), random.randint(8, 20))
     exercise = Exercise(
-        user_id=user_id,
-        description=description,
-        duration=duration,
-        date=date,
+        user_id=user_id, description=description, duration=duration, date=date,
     )
     exercise_flask.db.session.add(exercise)
     exercise_flask.db.session.commit()
@@ -111,7 +106,7 @@ def test_users_route_returns_list_of_created_users(client):
     response = client.get("/users")
     data = json.loads(response.data)
 
-    assert set(user['username'] for user in data) == set(user.name for user in users)
+    assert set(user["username"] for user in data) == set(user.name for user in users)
 
 
 def test_add_route_creates_exercise_entry(client):
@@ -192,9 +187,15 @@ def test_log_route_returns_exercise_log_for_given_user(client):
     assert actual["username"] == test_user.name
     assert actual["count"] == len(exercises)
     assert len(actual["log"]) == len(exercises)
-    assert set(ex["description"] for ex in actual["log"]) == set(ex.description for ex in exercises)
-    assert set(ex["duration"] for ex in actual["log"]) == set(ex.duration for ex in exercises)
-    assert set(ex["date"] for ex in actual["log"]) == set(ex.date.strftime('%a, %d %b %Y %H:%M:%S GMT') for ex in exercises)
+    assert set(ex["description"] for ex in actual["log"]) == set(
+        ex.description for ex in exercises
+    )
+    assert set(ex["duration"] for ex in actual["log"]) == set(
+        ex.duration for ex in exercises
+    )
+    assert set(ex["date"] for ex in actual["log"]) == set(
+        ex.date.strftime("%a, %d %b %Y %H:%M:%S GMT") for ex in exercises
+    )
 
 
 def test_limit_argument_limits_exercise_log_results(client):
@@ -227,36 +228,27 @@ def test_missing_userid_field_results_in_code_400(client):
 
 
 def test_missing_add_route_field_results_in_code_400(client):
-    response = client.post(f"/add", data={
-        "userId": 1,
-        "description": "test",
-    })
+    response = client.post(f"/add", data={"userId": 1, "description": "test",})
     assert response.status_code == 400
 
 
 def test_invalid_date_format_results_in_code_400(client):
-    response = client.post(f"/add", data={
-        "userId": 1,
-        "description": "test",
-        "duration": 100,
-        "date": "test"
-    })
+    response = client.post(
+        f"/add",
+        data={"userId": 1, "description": "test", "duration": 100, "date": "test"},
+    )
     assert response.status_code == 400
 
 
 def test_invalid_user_on_log_route_results_in_code_400(client):
-    response = client.get(f"/log", data={
-        "userId": 100,
-        "description": "test",
-        "duration": 100,
-    })
+    response = client.get(
+        f"/log", data={"userId": 100, "description": "test", "duration": 100,}
+    )
     assert response.status_code == 400
 
 
 def test_invalid_user_on_add_route_results_in_code_400(client):
-    response = client.post(f"/add", data={
-        "userId": 100,
-        "description": "test",
-        "duration": 100,
-    })
+    response = client.post(
+        f"/add", data={"userId": 100, "description": "test", "duration": 100,}
+    )
     assert response.status_code == 400

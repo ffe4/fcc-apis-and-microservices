@@ -15,7 +15,7 @@ def create_user():
     user = User(username=username)
     db.session.add(user)
     db.session.commit()
-    return jsonify({"_id": user.id, "username": user.name, })
+    return jsonify({"_id": user.id, "username": user.name,})
 
 
 @exercise_api.route("/users", methods=["GET"])
@@ -31,7 +31,7 @@ def add_exercise():
     data = {
         "user_id": request.form["userId"],
         "description": request.form["description"],
-        "duration": request.form["duration"]
+        "duration": request.form["duration"],
     }
     if request.form.get("date"):
         try:
@@ -45,13 +45,15 @@ def add_exercise():
         abort(400, "user not found")
     db.session.add(exercise)
     db.session.commit()
-    return jsonify({
-        "_id": user.id,
-        "username": user.name,
-        "date": datetime.isoformat(exercise.date),
-        "duration": exercise.duration,
-        "description": exercise.description,
-    })
+    return jsonify(
+        {
+            "_id": user.id,
+            "username": user.name,
+            "date": datetime.isoformat(exercise.date),
+            "duration": exercise.duration,
+            "description": exercise.description,
+        }
+    )
 
 
 @exercise_api.route("/log", methods=["GET"])
@@ -75,15 +77,18 @@ def exercise_log():
     if request.args.get("limit"):
         query = query.limit(request.args.get("limit"))
     exercises = query.all()
-    return jsonify({
-        "_id": user.id,
-        "username": user.name,
-        "count": len(exercises),
-        "log": [
-            {
-                "description": ex.description,
-                "duration": ex.duration,
-                "date": ex.date,
-            } for ex in exercises
-        ]
-    })
+    return jsonify(
+        {
+            "_id": user.id,
+            "username": user.name,
+            "count": len(exercises),
+            "log": [
+                {
+                    "description": ex.description,
+                    "duration": ex.duration,
+                    "date": ex.date,
+                }
+                for ex in exercises
+            ],
+        }
+    )
