@@ -7,6 +7,7 @@ import pytest
 from pytest_bdd import given, when, then, parsers, scenarios
 
 from fcc_exercise import exercise_flask
+from fcc_exercise.models import User, Exercise
 
 
 scenarios("exercise_tracker.feature")
@@ -18,23 +19,30 @@ def context():
 
 
 @pytest.fixture
-def client():
-    exercise_flask.app.config["DATABASE_URI"] = "sqlite:///:memory:"
-    exercise_flask.app.config["TESTING"] = True
+def app():
+    app = exercise_flask.create_app({
+        "DATABASE_URI": "sqlite:///:memory:",
+        "TESTING": True,
+        "DEBUT": True,
+    })
+    ctx = app.test_request_context()
+    ctx.push()
+    yield app
+    ctx.pop()
 
+    return app
+
+
+@pytest.fixture
+def client(app):
     with exercise_flask.app.test_client() as client:
-        with exercise_flask.app.app_context():
-            exercise_flask.init_db()
         yield client
-
-    exercise_flask.reset_db()
-    exercise_flask.init_db()
 
 
 def create_test_user(name=None):
     if name is None:
         name = ''.join(random.choices(string.ascii_uppercase, k=10))
-    test_user = exercise_flask.User(username=name)
+    test_user = User(username=name)
     exercise_flask.db.session.add(test_user)
     exercise_flask.db.session.commit()
     return test_user
@@ -44,7 +52,7 @@ def create_test_exercise(user_id, description=None, duration=None, date=None):
     description = description or ''.join(random.choices(string.ascii_uppercase, k=10))
     duration = duration or random.randint(10, 10000)
     date = date or datetime(2020, 1, random.randint(1, 10), random.randint(8, 20))
-    exercise = exercise_flask.Exercise(
+    exercise = Exercise(
         user_id=user_id,
         description=description,
         duration=duration,
@@ -72,7 +80,7 @@ def new_user(api_endpoint, username, context):
     )
 )
 def row_exists(model_name: str, field: str, field_value):
-    model = getattr(exercise_flask, model_name.title())
+    model = globals()[model_name.title()]
     result = model.query.filter_by(username=field_value).first()
     assert result
 
@@ -85,15 +93,25 @@ def user_returned(context, username):
     assert isinstance(actual["_id"], int)
 
 
+def test_new_user_route_creates_user_and_returns_id(client):
+    response = client.post("/new-user", data="Alex")
+    data = json.loads(response.data)
+
+    assert data is not None
+    assert data.get("username") == "Alex"
+    assert data.get("_id") is not None
+
+    user = User.query.get(data.get("_id"))
+    assert user.name == "Alex"
+
+
 def test_users_route_returns_list_of_created_users(client):
-    users = {"UserA", "UserB", "@User", "user C", "/.,;'"}
-    for name in users:
-        client.post("/new-user", data=name)
+    users = [create_test_user() for _ in range(5)]
 
     response = client.get("/users")
     data = json.loads(response.data)
 
-    assert set([user['username'] for user in data]) == users
+    assert set(user['username'] for user in data) == set(user.name for user in users)
 
 
 def test_add_route_creates_exercise_entry(client):
@@ -107,7 +125,7 @@ def test_add_route_creates_exercise_entry(client):
 
     client.post("/add", data=exercise)
 
-    actual = exercise_flask.Exercise.query.first()
+    actual = Exercise.query.first()
     assert actual is not None
     assert actual.user_id == exercise["userId"]
     assert actual.description == exercise["description"]
@@ -125,7 +143,7 @@ def test_add_route_creates_date_if_none_specified(client):
 
     client.post("/add", data=exercise)
 
-    actual = exercise_flask.Exercise.query.first()
+    actual = Exercise.query.first()
     assert actual is not None
     assert actual.date is not None
 
@@ -184,13 +202,10 @@ def test_limit_argument_limits_exercise_log_results(client):
     for i in range(25):
         create_test_exercise(test_user.id)
 
-    response = client.get(f"/log?userId={test_user.id}")
-    actual_full = json.loads(response.data)
     response = client.get(f"/log?userId={test_user.id}&limit=20")
-    actual_limited = json.loads(response.data)
+    actual = json.loads(response.data)
 
-    assert len(actual_full["log"]) == 25
-    assert len(actual_limited["log"]) == 20
+    assert len(actual["log"]) == 20
 
 
 def test_from_to_limiting_of_exercise_log_results(client):
