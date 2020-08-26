@@ -1,0 +1,111 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: exercise
+  labels:
+    app: exercise
+spec:
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+  selector:
+    app: exercise
+    tier: frontend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: exercise
+  name: exercise-postgres
+spec:
+  ports:
+    - port: 5432
+      targetPort: 5432
+  selector:
+    app: exercise
+    tier: backend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: exercise
+  name: exercise
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: exercise
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: exercise
+        tier: frontend
+    spec:
+      containers:
+      - image: ffe4/fcc-exercise
+        imagePullPolicy: Always
+        name: exercise-app
+        env:
+          - name: SQLALCHEMY_DATABASE_URI
+            value: postgresql://user:password@exercise-postgres:5432/exercise  # TODO
+        ports:
+        - containerPort: 5000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: exercise
+    tier: backend
+  name: exercise-postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: exercise
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: exercise
+        tier: backend
+    spec:
+      containers:
+      - env:
+        - name: POSTGRES_DB
+          value: exercise
+        - name: POSTGRES_PASSWORD
+          value: password
+        - name: POSTGRES_USER
+          value: user
+        image: postgres:latest
+        imagePullPolicy: Always
+        name: exercise-postgres
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: db-data
+      restartPolicy: Always
+      volumes:
+      - name: db-data
+        persistentVolumeClaim:
+          claimName: db-data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: exercise
+    tier: backend
+  name: db-data
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi

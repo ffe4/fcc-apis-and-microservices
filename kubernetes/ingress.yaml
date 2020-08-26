@@ -24,3 +24,8 @@ spec:
             backend:
               serviceName: shorturl
               servicePort: 80
+          - path: /api/exercise/()(.*)
+            pathType: Prefix
+            backend:
+              serviceName: exercise
+              servicePort: 80
