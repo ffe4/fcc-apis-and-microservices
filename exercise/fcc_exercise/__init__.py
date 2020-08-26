@@ -1,1 +1,1 @@
-from fcc_exercise.exercise_flask import app, db
+from fcc_exercise.exercise_flask import app
