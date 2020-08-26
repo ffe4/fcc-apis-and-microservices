@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: timestamp
+  labels:
+    app: timestamp
+spec:
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+  selector:
+    app: timestamp
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: timestamp
+  labels:
+    app: timestamp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: timestamp
+  template:
+    metadata:
+      labels:
+        app: timestamp
+    spec:
+      containers:
+        - image: ffe4/fcc-timestamp
+          name: timestamp-app
+          ports:
+            - containerPort: 5000
+          imagePullPolicy: Always
