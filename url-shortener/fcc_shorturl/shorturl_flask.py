@@ -42,9 +42,11 @@ def _is_valid_url(url):
 @app.route("/new", methods=["POST"])
 def add_url():
     url = request.form.get("url")
+    if not url:
+        return jsonify({"error": "must specify url parameter"}), 400
     url = parse_user_url(url)
     if not _is_valid_url(url):
-        return jsonify({"error": "invalid URL"})
+        return jsonify({"error": "invalid URL"}), 400
     short_url = redis.add(url)
     return jsonify({"original_url": url, "short_url": short_url})
 
