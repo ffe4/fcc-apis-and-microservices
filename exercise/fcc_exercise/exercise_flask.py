@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask
 
 from fcc_exercise.database import db
@@ -8,7 +10,7 @@ def create_app(test_config=None):
     app = Flask(__name__)
     app.config.from_mapping(
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
-        SQLALCHEMY_DATABASE_URI="sqlite:///:memory:",  # TODO
+        SQLALCHEMY_DATABASE_URI=os.getenv("SQLALCHEMY_DATABASE_URI") or "sqlite:///:memory:",
     )
     if test_config is None:
         app.config.from_pyfile("config.py", silent=True)

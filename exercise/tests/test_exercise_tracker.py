@@ -21,7 +21,7 @@ def context():
 @pytest.fixture
 def app():
     app = exercise_flask.create_app(
-        {"DATABASE_URI": "sqlite:///:memory:", "TESTING": True, "DEBUT": True}
+        {"SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:", "TESTING": True, "DEBUG": True}
     )
     ctx = app.test_request_context()
     ctx.push()

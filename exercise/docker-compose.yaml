@@ -1,0 +1,24 @@
+version: "3"
+services:
+  db:
+    restart: always
+    image: postgres:latest
+    environment:
+      - POSTGRES_DB=exercise
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+  web:
+    restart: always
+    build: .
+    environment:
+      - SQLALCHEMY_DATABASE_URI=postgresql://user:password@db:5432/exercise
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+volumes:
+  db-data:
