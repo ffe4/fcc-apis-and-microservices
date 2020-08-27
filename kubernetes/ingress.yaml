@@ -29,3 +29,8 @@ spec:
             backend:
               serviceName: exercise
               servicePort: 80
+          - path: /()(.*)
+            pathType: Prefix
+            backend:
+              serviceName: nginx-static
+              servicePort: 80
