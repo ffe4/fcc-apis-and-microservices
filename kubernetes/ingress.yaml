@@ -15,7 +15,7 @@ spec:
               serviceName: timestamp
               servicePort: 80
           - path: /api/whoami(/|$)
-            pathType: Prefix
+            pathType: Exact
             backend:
               serviceName: whoami
               servicePort: 80
@@ -28,6 +28,11 @@ spec:
             pathType: Prefix
             backend:
               serviceName: exercise
+              servicePort: 80
+          - path: /api/upfile(/|$)
+            pathType: Exact
+            backend:
+              serviceName: upfile
               servicePort: 80
           - path: /()(.*)
             pathType: Prefix
