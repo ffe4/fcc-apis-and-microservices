@@ -11,7 +11,9 @@ exercise_api = Blueprint("exercise_api", __name__)
 
 @exercise_api.route("/new-user", methods=["POST"])
 def create_user():
-    username = request.data.decode("utf-8")
+    username = request.form.get("username")
+    if not username:
+        abort(400, "Missing username")
     user = User(username=username)
     db.session.add(user)
     db.session.commit()
