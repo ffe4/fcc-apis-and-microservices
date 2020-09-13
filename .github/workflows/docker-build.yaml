@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false  # ensures the entire test matrix is run, even if one permutation fails
       matrix:
-        path: ["exercise", "timestamp", "upfile", "whoami", "shorturl", "nginx-static"]
+        path: ["exercise", "timestamp", "upfile", "whoami", "shorturl"]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
