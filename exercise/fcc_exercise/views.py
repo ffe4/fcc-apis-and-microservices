@@ -51,7 +51,7 @@ def add_exercise():
         {
             "_id": user.id,
             "username": user.name,
-            "date": datetime.isoformat(exercise.date),
+            "date": exercise.date.strftime("%a %b %d %Y"),
             "duration": exercise.duration,
             "description": exercise.description,
         }
