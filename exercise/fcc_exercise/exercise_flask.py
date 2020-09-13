@@ -1,6 +1,7 @@
 import os
 
 from flask import Flask
+from flask_cors import CORS
 
 from fcc_exercise.database import db
 from fcc_exercise.views import exercise_api
@@ -8,6 +9,7 @@ from fcc_exercise.views import exercise_api
 
 def create_app(test_config=None):
     app = Flask(__name__)
+    CORS(app)
     app.config.from_mapping(
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         SQLALCHEMY_DATABASE_URI=os.getenv("SQLALCHEMY_DATABASE_URI") or "sqlite:///:memory:",
